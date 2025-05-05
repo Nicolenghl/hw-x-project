@@ -5,8 +5,8 @@ contract MovieTicketBooking {
     // State Variables
     string public dishName;
     uint public dishPrice;
-    uint public totalSeats;
-    uint public availableSeats;
+    uint public Inventory;
+    uint public availableInventory;
     mapping(address => uint) public ticketsBought;
 
     // Event declaration
@@ -16,15 +16,15 @@ contract MovieTicketBooking {
     constructor(string memory _dishName, uint _dishPrice, uint _totalSeats) {
         dishName = _dishName;
         dishPrice = _dishPrice;
-        totalSeats = _totalSeats;
-        availableSeats = _totalSeats;
+        Inventory = _totalSeats;
+        availableInventory = _totalSeats;
     }
 
     // Functions
     function buyTicket(uint _numberOfTickets) public payable {
         // Error handling
         require(
-            _numberOfTickets <= availableSeats,
+            _numberOfTickets <= availableInventory,
             "Not enough seats available"
         );
         require(
@@ -33,7 +33,7 @@ contract MovieTicketBooking {
         );
 
         // Update state
-        availableSeats -= _numberOfTickets;
+        availableInventory -= _numberOfTickets;
         ticketsBought[msg.sender] += _numberOfTickets;
 
         // Emit event
@@ -47,7 +47,7 @@ contract MovieTicketBooking {
     }
 
     function getAvailableSeats() public view returns (uint) {
-        return availableSeats;
+        return availableInventory;
     }
 
     function getTotalTicketsBought(address _buyer) public view returns (uint) {

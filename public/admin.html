@@ -153,8 +153,8 @@
                     required>
             </div>
             <div class="form-group">
-                <label for="total-seats">Total Seats:</label>
-                <input type="number" id="total-seats" min="1" placeholder="Enter total available seats" required>
+                <label for="total-seats">Initial Inventory:</label>
+                <input type="number" id="total-seats" min="1" placeholder="Enter initial inventory amount" required>
             </div>
             <button id="deploy-contract">Deploy New Movie Contract</button>
         </div>
@@ -379,7 +379,7 @@
                     <h3>${movie.name}</h3>
                     <p>Contract Address: <span class="movie-address">${movie.address}</span></p>
                     <p>Dish Price: ${movie.ticketPrice} ETH</p>
-                    <p>Total Seats: ${movie.totalSeats}</p>
+                    <p>Initial Inventory: ${movie.totalSeats}</p>
                     <p>Deployed: ${movie.timestamp}</p>
                     <button onclick="loadMovie('${movie.address}')">Load This Movie</button>
                 </div>

@@ -259,14 +259,15 @@
             <h2>Movie Information</h2>
             <p>Dish: <span id="movie-name">Loading...</span></p>
             <p>Dish Price: <span id="ticket-price">Loading...</span> ETH</p>
-            <p>Available Seats: <span id="available-seats">Loading...</span> / <span id="total-seats">Loading...</span>
+            <p>Available Inventory: <span id="available-seats">Loading...</span> / <span
+                    id="total-seats">Loading...</span>
             </p>
             <p>Your Tickets: <span id="user-tickets">Loading...</span></p>
         </div>
 
         <div class="section">
-            <h2>Check Available Seats</h2>
-            <button id="refresh-seats">Refresh Available Seats</button>
+            <h2>Check Available Inventory</h2>
+            <button id="refresh-seats">Refresh Available Inventory</button>
         </div>
 
         <div class="section">
@@ -453,11 +454,11 @@
                 const dishPriceEth = ethers.formatEther(dishPrice);
                 ticketPriceElem.textContent = dishPriceEth;
 
-                const totalSeats = await contract.totalSeats();
-                totalSeatsElem.textContent = totalSeats.toString();
+                const inventory = await contract.Inventory();
+                totalSeatsElem.textContent = inventory.toString();
 
-                const availableSeats = await contract.availableSeats();
-                availableSeatsElem.textContent = availableSeats.toString();
+                const availableInventory = await contract.availableInventory();
+                availableSeatsElem.textContent = availableInventory.toString();
 
                 const userAddress = await signer.getAddress();
                 const userTickets = await contract.ticketsBought(userAddress);
@@ -531,20 +532,20 @@
             }
 
             try {
-                showAlert("Refreshing seat information...", "success");
+                showAlert("Refreshing inventory information...", "success");
 
                 // Get updated seat information
-                const availableSeats = await contract.getAvailableSeats();
-                const totalSeats = await contract.totalSeats();
+                const availableInventory = await contract.getAvailableSeats();
+                const inventory = await contract.Inventory();
 
                 // Update UI
-                availableSeatsElem.textContent = availableSeats.toString();
-                totalSeatsElem.textContent = totalSeats.toString();
+                availableSeatsElem.textContent = availableInventory.toString();
+                totalSeatsElem.textContent = inventory.toString();
 
-                showAlert("Seat information refreshed successfully!", "success");
+                showAlert("Inventory information refreshed successfully!", "success");
             } catch (error) {
                 console.error(error);
-                showAlert("Error refreshing seat information: " + error.message, "error");
+                showAlert("Error refreshing inventory information: " + error.message, "error");
             }
         }
 
@@ -719,11 +720,11 @@
                             );
 
                             // Get available seats
-                            availableSeats = await movieContract.getAvailableSeats();
+                            availableSeats = await movieContract.availableInventory();
 
                             // If we didn't have total seats from storage, get from contract
                             if (totalSeats === "Unknown") {
-                                totalSeats = await movieContract.totalSeats();
+                                totalSeats = await movieContract.Inventory();
                             }
                         } catch (error) {
                             console.error(`Error fetching data for movie at ${movie.address}:`, error);
@@ -746,7 +747,7 @@
                         </div>
                         <div class="movie-content">
                             <p><strong>Dish Price:</strong> ${movie.ticketPrice || 'Unknown'} ETH</p>
-                            <p><strong>Seats:</strong> ${availableSeats} / ${totalSeats}</p>
+                            <p><strong>Inventory:</strong> ${availableSeats} / ${totalSeats}</p>
                             <div class="movie-stats">
                                 <span>Created: ${deploymentTime}</span>
                             </div>
