@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - Movie Ticket Booking</title>
+    <title>My Profile - GreenDish</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.4.0/dist/ethers.umd.min.js"></script>
     <style>
@@ -206,12 +206,28 @@
         .tickets-container {
             margin-top: 20px;
         }
+
+        details {
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        details summary {
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        details p {
+            margin: 5px 0;
+            padding-left: 10px;
+            border-left: 2px solid #eee;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>My Movie Profile</h1>
+        <h1>My GreenDish Profile</h1>
 
         <div class="nav-links">
             <a href="index.html">Dashboard</a>
@@ -266,6 +282,7 @@
                                 <th>Tickets</th>
                                 <th>Price Per Ticket</th>
                                 <th>Total Value</th>
+                                <th>Details</th>
                                 <th>Purchase Date</th>
                             </tr>
                         </thead>
@@ -305,7 +322,7 @@
         window.addEventListener('load', async function () {
             try {
                 // Load contract ABI from artifacts
-                const response = await fetch('artifacts/contracts/MovieTicketBooking.sol/MovieTicketBooking.json');
+                const response = await fetch('artifacts/contracts/GreenDish.sol/GreenDish.json');
                 const contractJson = await response.json();
                 movieTicketBookingABI = contractJson.abi;
 
@@ -447,7 +464,7 @@
                     );
 
                     // Get tickets for this movie
-                    const ticketCount = await movieContract.getTotalTicketsBought(userAddress);
+                    const ticketCount = await movieContract.getTotalDishesBought(userAddress);
 
                     if (ticketCount > 0) {
                         totalMoviesWithTickets++;
@@ -460,12 +477,28 @@
                         const totalValue = Number(dishPriceEth) * Number(ticketCount);
                         totalEthSpent += totalValue;
 
+                        // Try to get additional information if available
+                        let carbonCredits = "N/A";
+                        let mainComponent = "N/A";
+                        let supplySource = "N/A";
+
+                        try {
+                            carbonCredits = await movieContract.CarbonCredits();
+                            mainComponent = await movieContract.mainComponent();
+                            supplySource = await movieContract.SupplySource();
+                        } catch (error) {
+                            console.log("This contract doesn't have the new properties, using defaults");
+                        }
+
                         // Create a record for the table
                         ticketRecords.push({
                             name: movieName,
                             tickets: ticketCount.toString(),
                             price: dishPriceEth,
                             value: totalValue.toFixed(6),
+                            carbonCredits: carbonCredits.toString(),
+                            mainComponent: mainComponent,
+                            supplySource: supplySource,
                             date: 'Unknown' // We don't have purchase date in the contract
                         });
                     }
@@ -492,6 +525,14 @@
                         <td>${record.tickets}</td>
                         <td>${record.price} ETH</td>
                         <td>${record.value} ETH</td>
+                        <td>
+                            <details>
+                                <summary>View Details</summary>
+                                <p>Carbon Credits: ${record.carbonCredits}</p>
+                                <p>Main Component: ${record.mainComponent}</p>
+                                <p>Supply Source: ${record.supplySource}</p>
+                            </details>
+                        </td>
                         <td>${record.date}</td>
                     `;
                     ticketsBody.appendChild(row);

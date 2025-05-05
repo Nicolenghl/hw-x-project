@@ -15,7 +15,7 @@ async function main() {
     const mainComponent = "Locally grown vegetables";
     const SupplySource = "Local farmer";
 
-    console.log("Deploying MovieTicketBooking contract with parameters:");
+    console.log("Deploying GreenDish contract with parameters:");
     console.log(`Dish Name: ${dishName}`);
     console.log(`Dish Price: ${dishPrice} wei (${hre.ethers.formatEther(dishPrice)} ETH)`);
     console.log(`Inventory: ${Inventory}`);
@@ -23,7 +23,7 @@ async function main() {
     console.log(`Main Component: ${mainComponent}`);
     console.log(`Supply Source: ${SupplySource}`);
 
-    const movieTicketBooking = await hre.ethers.deployContract("MovieTicketBooking", [
+    const greenDish = await hre.ethers.deployContract("GreenDish", [
         dishName,
         dishPrice,
         Inventory,
@@ -32,11 +32,11 @@ async function main() {
         SupplySource
     ]);
 
-    await movieTicketBooking.waitForDeployment();
+    await greenDish.waitForDeployment();
 
-    const contractAddress = await movieTicketBooking.getAddress();
+    const contractAddress = await greenDish.getAddress();
     console.log(
-        `MovieTicketBooking contract deployed to ${contractAddress}`
+        `GreenDish contract deployed to ${contractAddress}`
     );
 
     // Save deployment info for the frontend

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Movie Ticket Booking</title>
+    <title>Dashboard - GreenDish</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.4.0/dist/ethers.umd.min.js"></script>
     <style>
@@ -231,7 +231,7 @@
 
 <body>
     <div class="container">
-        <h1>Movie Ticket Dashboard</h1>
+        <h1>GreenDish Dashboard</h1>
 
         <div class="nav-links">
             <a href="index.html" class="active">Dashboard</a>
@@ -256,7 +256,7 @@
         </div>
 
         <div class="info-container">
-            <h2>Movie Information</h2>
+            <h2>Dish Information</h2>
             <p>Dish: <span id="movie-name">Loading...</span></p>
             <p>Dish Price: <span id="ticket-price">Loading...</span> ETH</p>
             <p>Available Inventory: <span id="available-seats">Loading...</span> / <span
@@ -264,7 +264,7 @@
             <p>Carbon Credits: <span id="carbon-credits">Loading...</span></p>
             <p>Main Component: <span id="main-component">Loading...</span></p>
             <p>Supply Source: <span id="supply-source">Loading...</span></p>
-            <p>Your Tickets: <span id="user-tickets">Loading...</span></p>
+            <p>Your Dishes: <span id="user-tickets">Loading...</span></p>
         </div>
 
         <div class="section">
@@ -273,40 +273,40 @@
         </div>
 
         <div class="section">
-            <h2>Your Tickets Across All Movies</h2>
-            <button id="load-all-tickets">Load My Ticket Collection</button>
+            <h2>Your Dishes Across All Movies</h2>
+            <button id="load-all-tickets">Load My Dish Collection</button>
             <div id="all-tickets-container" style="display:none;">
                 <table id="all-tickets-table">
                     <thead>
                         <tr>
                             <th>Movie Name</th>
-                            <th>Tickets</th>
+                            <th>Dishes</th>
                             <th>Contract Address</th>
                         </tr>
                     </thead>
                     <tbody id="all-tickets-body">
-                        <!-- Tickets will be loaded here -->
+                        <!-- Dishes will be loaded here -->
                     </tbody>
                 </table>
             </div>
         </div>
 
         <div class="section">
-            <h2>Check Tickets by Address</h2>
+            <h2>Check Dishes by Address</h2>
             <div class="form-group">
                 <label for="address-input">Enter Ethereum Address:</label>
                 <input type="text" id="address-input" placeholder="0x...">
-                <button id="check-address">Check Tickets</button>
+                <button id="check-address">Check Dishes</button>
             </div>
             <div id="address-result"></div>
         </div>
 
         <div class="ticket-section">
-            <h2>Buy Tickets</h2>
-            <label for="ticket-quantity">Number of Tickets:</label>
-            <input type="number" id="ticket-quantity" min="1" value="1">
+            <h2>Purchase Dish</h2>
+            <label for="dish-quantity">Number of Dishes:</label>
+            <input type="number" id="dish-quantity" min="1" value="1">
             <p>Total Cost: <span id="total-cost">0</span> ETH</p>
-            <button id="buy-tickets">Buy Tickets</button>
+            <button id="buy-tickets">Purchase Dish</button>
         </div>
 
         <div id="transaction-status"></div>
@@ -333,17 +333,17 @@
         const carbonCreditsElem = document.getElementById('carbon-credits');
         const mainComponentElem = document.getElementById('main-component');
         const supplySourceElem = document.getElementById('supply-source');
-        const userTicketsElem = document.getElementById('user-tickets');
-        const ticketQuantityInput = document.getElementById('ticket-quantity');
+        const userDishesElem = document.getElementById('user-tickets');
+        const dishQuantityInput = document.getElementById('dish-quantity');
         const totalCostElem = document.getElementById('total-cost');
-        const buyTicketsBtn = document.getElementById('buy-tickets');
+        const buyDishesBtn = document.getElementById('buy-tickets');
         const transactionStatus = document.getElementById('transaction-status');
 
         // Initialize
         window.addEventListener('load', async function () {
             // Load contract ABI from artifacts
             try {
-                const response = await fetch('artifacts/contracts/MovieTicketBooking.sol/MovieTicketBooking.json');
+                const response = await fetch('artifacts/contracts/GreenDish.sol/GreenDish.json');
                 const contractJson = await response.json();
                 movieTicketBookingABI = contractJson.abi;
 
@@ -395,8 +395,8 @@
         // Initialize app
         async function init() {
             connectWalletBtn.addEventListener('click', connectWallet);
-            ticketQuantityInput.addEventListener('input', updateTotalCost);
-            buyTicketsBtn.addEventListener('click', buyTickets);
+            dishQuantityInput.addEventListener('input', updateTotalCost);
+            buyDishesBtn.addEventListener('click', buyDishes);
 
             // Add event listeners for the new functionality
             document.getElementById('refresh-seats').addEventListener('click', refreshAvailableSeats);
@@ -475,8 +475,8 @@
                 supplySourceElem.textContent = supplySource;
 
                 const userAddress = await signer.getAddress();
-                const userTickets = await contract.ticketsBought(userAddress);
-                userTicketsElem.textContent = userTickets.toString();
+                const userTickets = await contract.DishesBought(userAddress);
+                userDishesElem.textContent = userTickets.toString();
 
                 // Update total cost
                 updateTotalCost();
@@ -488,17 +488,17 @@
 
         // Update total cost
         function updateTotalCost() {
-            const quantity = parseInt(ticketQuantityInput.value) || 0;
+            const quantity = parseInt(dishQuantityInput.value) || 0;
             const price = parseFloat(ticketPriceElem.textContent) || 0;
             totalCostElem.textContent = (quantity * price).toFixed(6);
         }
 
-        // Buy tickets
-        async function buyTickets() {
-            const quantity = parseInt(ticketQuantityInput.value);
+        // Buy dishes
+        async function buyDishes() {
+            const quantity = parseInt(dishQuantityInput.value);
 
             if (quantity <= 0) {
-                showAlert("Please enter a valid number of tickets", "error");
+                showAlert("Please enter a valid number of dishes", "error");
                 return;
             }
 
@@ -508,17 +508,17 @@
 
                 showAlert("Confirm transaction in MetaMask...", "success");
 
-                const tx = await contract.buyTicket(quantity, { value: totalCost });
+                const tx = await contract.purchaseDish(quantity, { value: totalCost });
                 showAlert("Transaction submitted. Waiting for confirmation...", "success");
 
                 await tx.wait();
-                showAlert(`Successfully purchased ${quantity} tickets!`, "success");
+                showAlert(`Successfully purchased ${quantity} dishes!`, "success");
 
                 // Reload contract data
                 await loadContractData();
             } catch (error) {
                 console.error(error);
-                showAlert("Error buying tickets: " + error.message, "error");
+                showAlert("Error purchasing dishes: " + error.message, "error");
             }
         }
 
@@ -563,7 +563,7 @@
             }
         }
 
-        // New function to check tickets by address
+        // New function to check dishes by address
         async function checkTicketsByAddress() {
             if (!contract) {
                 showAlert("Please connect your wallet first", "error");
@@ -586,27 +586,27 @@
             }
 
             try {
-                showAlert("Checking tickets for address...", "success");
+                showAlert("Checking dishes for address...", "success");
 
-                // Call contract to get ticket count
-                const ticketCount = await contract.getTotalTicketsBought(address);
+                // Call contract to get dish count
+                const dishCount = await contract.getTotalDishesBought(address);
 
                 // Update UI with result
                 addressResult.style.display = 'block';
 
-                if (ticketCount > 0) {
-                    addressResult.innerHTML = `<p>Address <code>${address}</code> has purchased <strong>${ticketCount}</strong> ticket(s).</p>`;
+                if (dishCount > 0) {
+                    addressResult.innerHTML = `<p>Address <code>${address}</code> has purchased <strong>${dishCount}</strong> dish(es).</p>`;
                 } else {
-                    addressResult.innerHTML = `<p>Address <code>${address}</code> has not purchased any tickets.</p>`;
+                    addressResult.innerHTML = `<p>Address <code>${address}</code> has not purchased any dishes.</p>`;
                 }
             } catch (error) {
                 console.error(error);
-                showAlert("Error checking tickets: " + error.message, "error");
+                showAlert("Error checking dishes: " + error.message, "error");
                 addressResult.style.display = 'none';
             }
         }
 
-        // New function to load all tickets the user has purchased across different movies
+        // New function to load all dishes the user has purchased across different movies
         async function loadAllUserTickets() {
             if (!signer) {
                 showAlert("Please connect your wallet first", "error");
@@ -614,7 +614,7 @@
             }
 
             const userAddress = await signer.getAddress();
-            showAlert("Loading your ticket collection...", "success");
+            showAlert("Loading your dish collection...", "success");
 
             // Get deployed movies from localStorage
             const storedMovies = localStorage.getItem('deployedMovies');
@@ -640,14 +640,14 @@
                 return;
             }
 
-            // Container for all tickets
-            const allTicketsContainer = document.getElementById('all-tickets-container');
-            const allTicketsBody = document.getElementById('all-tickets-body');
-            allTicketsBody.innerHTML = ''; // Clear existing content
+            // Container for all dishes
+            const allDishesContainer = document.getElementById('all-tickets-container');
+            const allDishesBody = document.getElementById('all-tickets-body');
+            allDishesBody.innerHTML = ''; // Clear existing content
 
-            let ticketsFound = false;
+            let dishesFound = false;
 
-            // Check each movie contract for tickets
+            // Check each movie contract for dishes
             for (const movie of deployedMovies) {
                 try {
                     // Create contract instance for this movie
@@ -657,40 +657,40 @@
                         signer
                     );
 
-                    // Get tickets for this movie
-                    const ticketCount = await movieContract.getTotalTicketsBought(userAddress);
+                    // Get dishes for this movie
+                    const dishCount = await movieContract.getTotalDishesBought(userAddress);
 
-                    if (ticketCount > 0) {
-                        ticketsFound = true;
+                    if (dishCount > 0) {
+                        dishesFound = true;
 
                         // Add to the table
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${movie.name || 'Unknown Movie'}</td>
-                            <td>${ticketCount.toString()}</td>
+                            <td>${dishCount.toString()}</td>
                             <td><span class="address-code">${movie.address}</span></td>
                         `;
-                        allTicketsBody.appendChild(row);
+                        allDishesBody.appendChild(row);
                     }
                 } catch (error) {
-                    console.error(`Error checking tickets for movie at ${movie.address}:`, error);
+                    console.error(`Error checking dishes for movie at ${movie.address}:`, error);
                     // Continue with next movie
                 }
             }
 
             // Show the results
-            if (ticketsFound) {
-                allTicketsContainer.style.display = 'block';
+            if (dishesFound) {
+                allDishesContainer.style.display = 'block';
             } else {
-                allTicketsBody.innerHTML = `
+                allDishesBody.innerHTML = `
                     <tr>
-                        <td colspan="3" class="no-tickets">You haven't purchased any tickets across any movies yet.</td>
+                        <td colspan="3" class="no-tickets">You haven't purchased any dishes across any movies yet.</td>
                     </tr>
                 `;
-                allTicketsContainer.style.display = 'block';
+                allDishesContainer.style.display = 'block';
             }
 
-            showAlert("Ticket collection loaded successfully!", "success");
+            showAlert("Dish collection loaded successfully!", "success");
         }
 
         // Function to load all available movies created by admin
@@ -717,6 +717,8 @@
             const moviesGrid = document.getElementById('movies-grid');
             moviesGrid.innerHTML = ''; // Clear existing content
 
+            let moviesWithInventory = 0;
+
             // Add each movie to the grid
             for (const movie of deployedMovies) {
                 try {
@@ -724,6 +726,7 @@
                     let movieContract;
                     let availableSeats = "Unknown";
                     let inventory = movie.totalSeats || "Unknown";
+                    let hasInventory = false;
 
                     if (signer) {
                         try {
@@ -732,6 +735,15 @@
                                 movieTicketBookingABI,
                                 signer
                             );
+
+                            // Check if there's available inventory
+                            hasInventory = await movieContract.hasAvailableInventory();
+
+                            // If no inventory, skip this movie
+                            if (!hasInventory) {
+                                console.log(`Movie ${movie.name} has no available inventory, skipping...`);
+                                continue;
+                            }
 
                             // Get available seats
                             availableSeats = await movieContract.availableInventory();
@@ -742,8 +754,12 @@
                             }
                         } catch (error) {
                             console.error(`Error fetching data for movie at ${movie.address}:`, error);
+                            continue;
                         }
                     }
+
+                    // Increment count of movies with inventory
+                    moviesWithInventory++;
 
                     // Create movie card
                     const movieCard = document.createElement('div');
@@ -789,7 +805,12 @@
                 }
             }
 
-            showAlert(`Found ${deployedMovies.length} available movies!`, "success");
+            if (moviesWithInventory === 0) {
+                moviesGrid.innerHTML = '<div class="placeholder-message">No dishes available right now. Please check back later.</div>';
+                showAlert("No dishes with available inventory found.", "error");
+            } else {
+                showAlert(`Found ${moviesWithInventory} available dishes!`, "success");
+            }
         }
 
         // Function to select a movie and load its contract

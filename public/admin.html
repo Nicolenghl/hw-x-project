@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Ticket Booking - Admin</title>
+    <title>GreenDish - Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.4.0/dist/ethers.umd.min.js"></script>
     <style>
         body {
@@ -123,12 +123,49 @@
             border-radius: 3px;
             font-size: 14px;
         }
+
+        .movie-actions {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .update-inventory {
+            display: flex;
+            gap: 10px;
+        }
+
+        .update-inventory input {
+            flex: 1;
+        }
+
+        .owner-badge {
+            background-color: #d4edda;
+            color: #28a745;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .not-owner-badge {
+            background-color: #f8d7da;
+            color: #dc3545;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .owner-warning {
+            color: #dc3545;
+            font-size: 12px;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Movie Ticket Booking Admin</h1>
+        <h1>GreenDish Admin</h1>
 
         <div class="nav-links">
             <a href="index.html">Dashboard</a>
@@ -142,14 +179,14 @@
         </div>
 
         <div id="deploy-form">
-            <h2>Create New Movie Contract</h2>
+            <h2>Create New Dish Contract</h2>
             <div class="form-group">
-                <label for="movie-name">Dish Name:</label>
-                <input type="text" id="movie-name" placeholder="Enter dish name" required>
+                <label for="dish-name">Dish Name:</label>
+                <input type="text" id="dish-name" placeholder="Enter dish name" required>
             </div>
             <div class="form-group">
-                <label for="ticket-price">Dish Price (in ETH):</label>
-                <input type="number" id="ticket-price" step="0.001" min="0.001" placeholder="Enter dish price in ETH"
+                <label for="dish-price">Dish Price (in ETH):</label>
+                <input type="number" id="dish-price" step="0.001" min="0.001" placeholder="Enter dish price in ETH"
                     required>
             </div>
             <div class="form-group">
@@ -168,14 +205,14 @@
                 <label for="supply-source">Supply Source:</label>
                 <input type="text" id="supply-source" placeholder="Enter supply source" required>
             </div>
-            <button id="deploy-contract">Deploy New Movie Contract</button>
+            <button id="deploy-contract">Deploy New Dish Contract</button>
         </div>
 
         <div id="status-messages"></div>
 
         <div id="existing-movies">
-            <h2>Your Deployed Movie Contracts</h2>
-            <div id="movie-list">
+            <h2>Your Deployed Dish Contracts</h2>
+            <div id="dish-list">
                 <p>Connect your wallet to see deployed contracts</p>
             </div>
         </div>
@@ -185,20 +222,20 @@
         // Elements
         const connectWalletBtn = document.getElementById('connect-wallet');
         const walletStatus = document.getElementById('wallet-status');
-        const movieNameInput = document.getElementById('movie-name');
-        const ticketPriceInput = document.getElementById('ticket-price');
+        const dishNameInput = document.getElementById('dish-name');
+        const dishPriceInput = document.getElementById('dish-price');
         const totalSeatsInput = document.getElementById('total-seats');
         const carbonCreditsInput = document.getElementById('carbon-credits');
         const mainComponentInput = document.getElementById('main-component');
         const supplySourceInput = document.getElementById('supply-source');
         const deployContractBtn = document.getElementById('deploy-contract');
         const statusMessages = document.getElementById('status-messages');
-        const movieList = document.getElementById('movie-list');
+        const dishList = document.getElementById('dish-list');
 
         // State
         let provider;
         let signer;
-        let deployedMovies = [];
+        let deployedDishes = [];
         let movieFactoryAddress;
         let movieFactoryABI;
         let movieTicketBookingABI;
@@ -207,8 +244,8 @@
         // Initialize
         window.addEventListener('load', async function () {
             try {
-                // For this example, we'll load the Movie contract ABI
-                const response = await fetch('artifacts/contracts/MovieTicketBooking.sol/MovieTicketBooking.json');
+                // For this example, we'll load the GreenDish contract ABI
+                const response = await fetch('artifacts/contracts/GreenDish.sol/GreenDish.json');
                 contractJson = await response.json();
                 movieTicketBookingABI = contractJson.abi;
 
@@ -250,46 +287,46 @@
 
                 showAlert("Wallet connected successfully!", "success");
 
-                // Try to fetch previously deployed movies from local storage
-                loadDeployedMovies();
+                // Try to fetch previously deployed dishes from local storage
+                loadDeployedDishes();
             } catch (error) {
                 console.error(error);
                 showAlert("Error connecting to wallet: " + error.message, "error");
             }
         }
 
-        // Load previously deployed movies from local storage
-        function loadDeployedMovies() {
-            const storedMovies = localStorage.getItem('deployedMovies');
-            if (storedMovies) {
-                deployedMovies = JSON.parse(storedMovies);
-                renderMovieList();
+        // Load previously deployed dishes from local storage
+        function loadDeployedDishes() {
+            const storedDishes = localStorage.getItem('deployedDishes');
+            if (storedDishes) {
+                deployedDishes = JSON.parse(storedDishes);
+                renderDishList();
             } else {
-                movieList.innerHTML = "<p>No movie contracts deployed yet</p>";
+                dishList.innerHTML = "<p>No dish contracts deployed yet</p>";
             }
         }
 
-        // Save deployed movies to local storage
-        function saveDeployedMovies() {
-            localStorage.setItem('deployedMovies', JSON.stringify(deployedMovies));
+        // Save deployed dishes to local storage
+        function saveDeployedDishes() {
+            localStorage.setItem('deployedDishes', JSON.stringify(deployedDishes));
         }
 
-        // Deploy a new movie contract
+        // Deploy a new dish contract
         async function deployNewMovieContract() {
-            const movieName = movieNameInput.value.trim();
-            const ticketPrice = ticketPriceInput.value;
+            const dishName = dishNameInput.value.trim();
+            const dishPrice = dishPriceInput.value;
             const Inventory = totalSeatsInput.value;
             const carbonCredits = carbonCreditsInput.value;
             const mainComponent = mainComponentInput.value.trim();
             const supplySource = supplySourceInput.value.trim();
 
-            if (!movieName || !ticketPrice || !Inventory || !carbonCredits || !mainComponent || !supplySource) {
+            if (!dishName || !dishPrice || !Inventory || !carbonCredits || !mainComponent || !supplySource) {
                 showAlert("Please fill in all fields", "error");
                 return;
             }
 
-            if (parseFloat(ticketPrice) <= 0) {
-                showAlert("Ticket price must be greater than 0", "error");
+            if (parseFloat(dishPrice) <= 0) {
+                showAlert("Dish price must be greater than 0", "error");
                 return;
             }
 
@@ -304,22 +341,22 @@
             }
 
             try {
-                showAlert("Deploying new movie contract... Please confirm the transaction in MetaMask", "success");
+                showAlert("Deploying new dish contract... Please confirm the transaction in MetaMask", "success");
 
-                // Convert ticket price to wei
-                const ticketPriceWei = ethers.parseEther(ticketPrice.toString());
+                // Convert dish price to wei
+                const dishPriceWei = ethers.parseEther(dishPrice.toString());
 
                 // Create a new contract factory
-                const movieFactory = new ethers.ContractFactory(
+                const dishFactory = new ethers.ContractFactory(
                     movieTicketBookingABI,
                     contractJson.bytecode,
                     signer
                 );
 
                 // Deploy the contract
-                const movieContract = await movieFactory.deploy(
-                    movieName,
-                    ticketPriceWei,
+                const dishContract = await dishFactory.deploy(
+                    dishName,
+                    dishPriceWei,
                     Inventory,
                     carbonCredits,
                     mainComponent,
@@ -327,17 +364,17 @@
                 );
 
                 // Wait for deployment to complete
-                await movieContract.waitForDeployment();
+                await dishContract.waitForDeployment();
 
-                const contractAddress = await movieContract.getAddress();
+                const contractAddress = await dishContract.getAddress();
 
-                // Add to deployed movies list
+                // Add to deployed dishes list
                 const deploymentTime = new Date().toLocaleString();
-                deployedMovies.push({
-                    name: movieName,
+                deployedDishes.push({
+                    name: dishName,
                     address: contractAddress,
                     timestamp: deploymentTime,
-                    ticketPrice: ticketPrice,
+                    dishPrice: dishPrice,
                     totalSeats: Inventory,
                     carbonCredits: carbonCredits,
                     mainComponent: mainComponent,
@@ -345,16 +382,16 @@
                 });
 
                 // Save to local storage
-                saveDeployedMovies();
+                saveDeployedDishes();
 
                 // Update UI
-                renderMovieList();
+                renderDishList();
 
-                showAlert(`Movie contract "${movieName}" successfully deployed at ${contractAddress}`, "success");
+                showAlert(`Dish contract "${dishName}" successfully deployed at ${contractAddress}`, "success");
 
                 // Clear form
-                movieNameInput.value = '';
-                ticketPriceInput.value = '';
+                dishNameInput.value = '';
+                dishPriceInput.value = '';
                 totalSeatsInput.value = '';
                 carbonCreditsInput.value = '';
                 mainComponentInput.value = '';
@@ -397,35 +434,82 @@
             }
         }
 
-        // Render the list of deployed movies
-        function renderMovieList() {
-            if (deployedMovies.length === 0) {
-                movieList.innerHTML = "<p>No movie contracts deployed yet</p>";
+        // Render the list of deployed dishes
+        async function renderDishList() {
+            if (deployedDishes.length === 0) {
+                dishList.innerHTML = "<p>No dish contracts deployed yet</p>";
                 return;
             }
 
             let html = '';
-            deployedMovies.forEach((movie, index) => {
+
+            for (let index = 0; index < deployedDishes.length; index++) {
+                const dish = deployedDishes[index];
+
+                // Check if current user is the contract owner
+                let isOwner = false;
+                let ownerAddress = 'Unknown';
+
+                try {
+                    if (signer) {
+                        const userAddress = await signer.getAddress();
+
+                        const dishContract = new ethers.Contract(
+                            dish.address,
+                            movieTicketBookingABI,
+                            signer
+                        );
+
+                        try {
+                            ownerAddress = await dishContract.owner();
+                            isOwner = (ownerAddress.toLowerCase() === userAddress.toLowerCase());
+                        } catch (error) {
+                            console.log("This contract doesn't have an owner function");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error checking owner:", error);
+                }
+
+                let ownerInfo = '';
+                if (ownerAddress !== 'Unknown') {
+                    ownerInfo = `<p>Contract Owner: <span class="dish-owner">${ownerAddress.substring(0, 6)}...${ownerAddress.substring(38)}</span>`;
+                    if (isOwner) {
+                        ownerInfo += ' <span class="owner-badge">You are the owner</span></p>';
+                    } else {
+                        ownerInfo += ' <span class="not-owner-badge">You are not the owner</span></p>';
+                    }
+                }
+
                 html += `
-                <div class="movie-item">
-                    <h3>${movie.name}</h3>
-                    <p>Contract Address: <span class="movie-address">${movie.address}</span></p>
-                    <p>Dish Price: ${movie.ticketPrice} ETH</p>
-                    <p>Initial Inventory: ${movie.totalSeats}</p>
-                    <p>Carbon Credits: ${movie.carbonCredits || 'Not available'}</p>
-                    <p>Main Component: ${movie.mainComponent || 'Not available'}</p>
-                    <p>Supply Source: ${movie.supplySource || 'Not available'}</p>
-                    <p>Deployed: ${movie.timestamp}</p>
-                    <button onclick="loadMovie('${movie.address}')">Load This Movie</button>
+                <div class="dish-item">
+                    <h3>${dish.name}</h3>
+                    <p>Contract Address: <span class="dish-address">${dish.address}</span></p>
+                    <p>Dish Price: ${dish.dishPrice} ETH</p>
+                    <p>Initial Inventory: ${dish.totalSeats}</p>
+                    <p>Carbon Credits: ${dish.carbonCredits || 'Not available'}</p>
+                    <p>Main Component: ${dish.mainComponent || 'Not available'}</p>
+                    <p>Supply Source: ${dish.supplySource || 'Not available'}</p>
+                    ${ownerInfo}
+                    <p>Deployed: ${dish.timestamp}</p>
+                    <div class="dish-actions">
+                        ${isOwner ? `
+                        <div class="update-inventory">
+                            <input type="number" min="0" placeholder="New inventory" id="inventory-${index}">
+                            <button onclick="updateDishInventory('${dish.address}', ${index})">Update Inventory</button>
+                        </div>
+                        ` : '<p class="owner-warning">Only the contract owner can update inventory</p>'}
+                        <button onclick="loadDish('${dish.address}')">Load This Dish</button>
+                    </div>
                 </div>
                 `;
-            });
+            }
 
-            movieList.innerHTML = html;
+            dishList.innerHTML = html;
         }
 
-        // Load a specific movie into the frontend
-        function loadMovie(address) {
+        // Load a specific dish into the frontend
+        function loadDish(address) {
             const deploymentData = {
                 contractAddress: address,
                 timestamp: new Date().toISOString()
@@ -436,7 +520,7 @@
 
             // In a real app, this would update the deployments.json file via an API
             // For our demo, we'll just redirect to the user interface
-            showAlert("Movie selected as active. Redirecting to the user interface...", "success");
+            showAlert("Dish selected as active. Redirecting to the user interface...", "success");
             setTimeout(() => {
                 window.location.href = "index.html";
             }, 2000);
@@ -456,6 +540,88 @@
             setTimeout(() => {
                 alert.remove();
             }, 5000);
+        }
+
+        // New function to update inventory
+        async function updateDishInventory(contractAddress, index) {
+            if (!signer) {
+                showAlert("Please connect your wallet first", "error");
+                return;
+            }
+
+            const inventoryInput = document.getElementById(`inventory-${index}`);
+            const newInventory = inventoryInput.value.trim();
+
+            if (!newInventory) {
+                showAlert("Please enter a new inventory value", "error");
+                return;
+            }
+
+            // Add extra validation to ensure we have a valid integer
+            if (!/^\d+$/.test(newInventory)) {
+                showAlert("Please enter a valid whole number for inventory", "error");
+                return;
+            }
+
+            const numericInventory = parseInt(newInventory);
+            if (isNaN(numericInventory) || numericInventory < 0) {
+                showAlert("Inventory cannot be negative and must be a valid number", "error");
+                return;
+            }
+
+            try {
+                showAlert("Updating inventory... Please confirm the transaction in MetaMask", "success");
+                console.log(`Attempting to update inventory for contract at ${contractAddress} to ${numericInventory}`);
+
+                // Create contract instance
+                const dishContract = new ethers.Contract(
+                    contractAddress,
+                    movieTicketBookingABI,
+                    signer
+                );
+
+                try {
+                    // Call the updateInventory function 
+                    const tx = await dishContract.updateInventory(numericInventory);
+
+                    showAlert("Transaction submitted. Waiting for confirmation...", "success");
+                    console.log("Transaction submitted:", tx.hash);
+
+                    // Wait for transaction to complete
+                    const receipt = await tx.wait();
+                    console.log("Transaction confirmed:", receipt);
+
+                    // Update the UI and stored data
+                    deployedDishes[index].totalSeats = numericInventory;
+                    saveDeployedDishes();
+                    renderDishList();
+
+                    showAlert(`Inventory successfully updated to ${numericInventory}`, "success");
+
+                    // Clear input
+                    inventoryInput.value = '';
+                } catch (error) {
+                    console.error("Transaction error details:", error);
+
+                    // Provide a more detailed error message
+                    let errorMessage = "Error updating inventory";
+
+                    if (error.reason) {
+                        errorMessage += `: ${error.reason}`;
+                    } else if (error.message) {
+                        errorMessage += `: ${error.message}`;
+                    }
+
+                    // Log detailed error information
+                    if (error.data) console.error("Error data:", error.data);
+                    if (error.code) console.error("Error code:", error.code);
+
+                    showAlert(errorMessage, "error");
+                }
+            } catch (error) {
+                console.error("Setup error:", error);
+                showAlert("Error setting up contract interaction: " + error.message, "error");
+            }
         }
     </script>
 </body>
