@@ -12,6 +12,7 @@ contract GreenDish {
     string public SupplySource;
     mapping(address => uint) public DishesBought;
     address public owner;
+    bool public isActive; // New variable to control dish visibility
 
     // Event declaration
     event DishPurchased(address buyer, uint numberOfDishes);

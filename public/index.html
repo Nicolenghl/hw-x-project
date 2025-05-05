@@ -216,97 +216,185 @@
             font-family: monospace;
             font-size: 0.85em;
             background: #f5f5f5;
-            padding: 2px 4px;
-            border-radius: 3px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            color: var(--primary-dark);
         }
 
-        .no-tickets {
+        .no-dishes {
             padding: 15px;
-            color: #666;
+            color: var(--gray);
             font-style: italic;
             text-align: center;
         }
+
+        /* Stats Section */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        .stat-title {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            #dishes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .info-item {
+                flex-direction: column;
+            }
+        }
+
+        /* Add to the existing styles */
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .nav-links a {
+            position: relative;
+        }
+
+        .profile-link:after {
+            content: "View Your Dishes";
+            position: absolute;
+            background-color: var(--dark);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .profile-link:hover:after {
+            opacity: 1;
+        }
     </style>
+
+    <!-- Script to reset contract addresses -->
+    <script src="reset-contracts.js"></script>
 </head>
 
 <body>
-    <div class="container">
-        <h1>GreenDish Dashboard</h1>
-
-        <div class="nav-links">
-            <a href="index.html" class="active">Dashboard</a>
-            <a href="profile.html">My Profile</a>
-            <a href="admin.html">Admin Panel</a>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="brand">GreenDish</a>
+                <div class="nav-links">
+                    <a href="index.html" class="active">Dashboard</a>
+                    <a href="profile.html" class="profile-link">My Profile</a>
+                    <a href="admin.html">Admin Panel</a>
+                </div>
+            </div>
         </div>
+    </header>
 
-        <div id="network-info">
-            <p>Network: <span id="network-name">Connecting...</span></p>
-        </div>
+    <div class="main-content">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-title">Network</div>
+                <div id="network-name" class="stat-value">Connecting...</div>
+            </div>
 
-        <div id="connection-status">
-            <p>Wallet Status: <span id="wallet-status">Not connected</span></p>
-            <button id="connect-wallet">Connect Wallet</button>
-        </div>
+            <div class="stat-card">
+                <div class="stat-title">Available Inventory</div>
+                <div id="available-inventory" class="stat-value">-</div>
+            </div>
 
-        <div class="section" id="all-movies-section">
-            <h2>Available Movies</h2>
-            <p>Browse all available movies below:</p>
-            <div id="movies-grid"></div>
-            <button id="load-all-movies">Show All Available Movies</button>
-        </div>
+            <div class="stat-card">
+                <div class="stat-title">Your Dishes</div>
+                <div id="user-dishes" class="stat-value">-</div>
+            </div>
 
-        <div class="info-container">
-            <h2>Dish Information</h2>
-            <p>Dish: <span id="movie-name">Loading...</span></p>
-            <p>Dish Price: <span id="ticket-price">Loading...</span> ETH</p>
-            <p>Available Inventory: <span id="available-seats">Loading...</span> / <span
-                    id="total-seats">Loading...</span></p>
-            <p>Carbon Credits: <span id="carbon-credits">Loading...</span></p>
-            <p>Main Component: <span id="main-component">Loading...</span></p>
-            <p>Supply Source: <span id="supply-source">Loading...</span></p>
-            <p>Your Dishes: <span id="user-tickets">Loading...</span></p>
-        </div>
-
-        <div class="section">
-            <h2>Check Available Inventory</h2>
-            <button id="refresh-seats">Refresh Available Inventory</button>
-        </div>
-
-        <div class="section">
-            <h2>Your Dishes Across All Movies</h2>
-            <button id="load-all-tickets">Load My Dish Collection</button>
-            <div id="all-tickets-container" style="display:none;">
-                <table id="all-tickets-table">
-                    <thead>
-                        <tr>
-                            <th>Movie Name</th>
-                            <th>Dishes</th>
-                            <th>Contract Address</th>
-                        </tr>
-                    </thead>
-                    <tbody id="all-tickets-body">
-                        <!-- Dishes will be loaded here -->
-                    </tbody>
-                </table>
+            <div class="stat-card">
+                <div class="stat-title">Carbon Credits</div>
+                <div id="carbon-credits" class="stat-value">-</div>
             </div>
         </div>
 
+        <div class="connection-status card">
+            <div>
+                <h3 class="card-title" style="margin-bottom: 5px; border-bottom: none;">Wallet Status</h3>
+                <span id="wallet-status" class="wallet-address">Not connected</span>
+            </div>
+            <button id="connect-wallet" class="btn">Connect Wallet</button>
+        </div>
+
         <div class="section">
-            <h2>Check Dishes by Address</h2>
+            <h2 class="card-title">Available Dishes</h2>
+            <div class="dish-status"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <p>Browse all sustainable dishes below:</p>
+                <button id="load-all-dishes" class="btn btn-secondary"
+                    style="padding: 8px 15px; font-size: 14px;">Refresh Dishes</button>
+            </div>
+            <div id="dishes-grid"></div>
+        </div>
+
+        <div class="section">
+            <h2 class="card-title">Purchase Dish</h2>
             <div class="form-group">
-                <label for="address-input">Enter Ethereum Address:</label>
-                <input type="text" id="address-input" placeholder="0x...">
-                <button id="check-address">Check Dishes</button>
+                <label for="dish-quantity">Number of Dishes:</label>
+                <input type="number" id="dish-quantity" min="1" value="1">
             </div>
-            <div id="address-result"></div>
-        </div>
-
-        <div class="ticket-section">
-            <h2>Purchase Dish</h2>
-            <label for="dish-quantity">Number of Dishes:</label>
-            <input type="number" id="dish-quantity" min="1" value="1">
-            <p>Total Cost: <span id="total-cost">0</span> ETH</p>
-            <button id="buy-tickets">Purchase Dish</button>
+            <div class="info-item" style="margin: 15px 0;">
+                <span class="info-label">Total Cost:</span>
+                <span id="total-cost" class="info-value">0</span> <span class="info-value">ETH</span>
+            </div>
+            <button id="buy-dishes" class="btn btn-block">Purchase Dish</button>
         </div>
 
         <div id="transaction-status"></div>
