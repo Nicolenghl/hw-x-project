@@ -10,17 +10,26 @@ const { saveDeployment } = require("./save-deployment");
 async function main() {
     const dishName = "Inception";
     const dishPrice = hre.ethers.parseEther("0.01"); // 0.01 ETH per ticket
-    const totalSeats = 50;
+    const Inventory = 50;
+    const CarbonCredits = 25; // Carbon credits per dish
+    const mainComponent = "Locally grown vegetables";
+    const SupplySource = "Local farmer";
 
     console.log("Deploying MovieTicketBooking contract with parameters:");
     console.log(`Dish Name: ${dishName}`);
     console.log(`Dish Price: ${dishPrice} wei (${hre.ethers.formatEther(dishPrice)} ETH)`);
-    console.log(`Total Seats: ${totalSeats}`);
+    console.log(`Inventory: ${Inventory}`);
+    console.log(`Carbon Credits: ${CarbonCredits}`);
+    console.log(`Main Component: ${mainComponent}`);
+    console.log(`Supply Source: ${SupplySource}`);
 
     const movieTicketBooking = await hre.ethers.deployContract("MovieTicketBooking", [
         dishName,
         dishPrice,
-        totalSeats
+        Inventory,
+        CarbonCredits,
+        mainComponent,
+        SupplySource
     ]);
 
     await movieTicketBooking.waitForDeployment();

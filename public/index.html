@@ -260,8 +260,10 @@
             <p>Dish: <span id="movie-name">Loading...</span></p>
             <p>Dish Price: <span id="ticket-price">Loading...</span> ETH</p>
             <p>Available Inventory: <span id="available-seats">Loading...</span> / <span
-                    id="total-seats">Loading...</span>
-            </p>
+                    id="total-seats">Loading...</span></p>
+            <p>Carbon Credits: <span id="carbon-credits">Loading...</span></p>
+            <p>Main Component: <span id="main-component">Loading...</span></p>
+            <p>Supply Source: <span id="supply-source">Loading...</span></p>
             <p>Your Tickets: <span id="user-tickets">Loading...</span></p>
         </div>
 
@@ -328,6 +330,9 @@
         const ticketPriceElem = document.getElementById('ticket-price');
         const availableSeatsElem = document.getElementById('available-seats');
         const totalSeatsElem = document.getElementById('total-seats');
+        const carbonCreditsElem = document.getElementById('carbon-credits');
+        const mainComponentElem = document.getElementById('main-component');
+        const supplySourceElem = document.getElementById('supply-source');
         const userTicketsElem = document.getElementById('user-tickets');
         const ticketQuantityInput = document.getElementById('ticket-quantity');
         const totalCostElem = document.getElementById('total-cost');
@@ -459,6 +464,15 @@
 
                 const availableInventory = await contract.availableInventory();
                 availableSeatsElem.textContent = availableInventory.toString();
+
+                const carbonCredits = await contract.CarbonCredits();
+                carbonCreditsElem.textContent = carbonCredits.toString();
+
+                const mainComponent = await contract.mainComponent();
+                mainComponentElem.textContent = mainComponent;
+
+                const supplySource = await contract.SupplySource();
+                supplySourceElem.textContent = supplySource;
 
                 const userAddress = await signer.getAddress();
                 const userTickets = await contract.ticketsBought(userAddress);
@@ -709,7 +723,7 @@
                     // Create a movie contract instance to get real-time data
                     let movieContract;
                     let availableSeats = "Unknown";
-                    let totalSeats = movie.totalSeats || "Unknown";
+                    let inventory = movie.totalSeats || "Unknown";
 
                     if (signer) {
                         try {
@@ -722,9 +736,9 @@
                             // Get available seats
                             availableSeats = await movieContract.availableInventory();
 
-                            // If we didn't have total seats from storage, get from contract
-                            if (totalSeats === "Unknown") {
-                                totalSeats = await movieContract.Inventory();
+                            // If we didn't have inventory data from storage, get from contract
+                            if (inventory === "Unknown") {
+                                inventory = await movieContract.Inventory();
                             }
                         } catch (error) {
                             console.error(`Error fetching data for movie at ${movie.address}:`, error);
@@ -747,7 +761,10 @@
                         </div>
                         <div class="movie-content">
                             <p><strong>Dish Price:</strong> ${movie.ticketPrice || 'Unknown'} ETH</p>
-                            <p><strong>Inventory:</strong> ${availableSeats} / ${totalSeats}</p>
+                            <p><strong>Inventory:</strong> ${availableSeats} / ${inventory}</p>
+                            <p><strong>Carbon Credits:</strong> ${movie.carbonCredits || 'Not available'}</p>
+                            <p><strong>Main Component:</strong> ${movie.mainComponent || 'Not available'}</p>
+                            <p><strong>Supply Source:</strong> ${movie.supplySource || 'Not available'}</p>
                             <div class="movie-stats">
                                 <span>Created: ${deploymentTime}</span>
                             </div>

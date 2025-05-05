@@ -7,17 +7,30 @@ contract MovieTicketBooking {
     uint public dishPrice;
     uint public Inventory;
     uint public availableInventory;
+    uint public CarbonCredits;
+    string public mainComponent;
+    string public SupplySource;
     mapping(address => uint) public ticketsBought;
 
     // Event declaration
     event TicketPurchased(address buyer, uint numberOfTickets);
 
     // Constructor
-    constructor(string memory _dishName, uint _dishPrice, uint _totalSeats) {
+    constructor(
+        string memory _dishName,
+        uint _dishPrice,
+        uint _Inventory,
+        uint _CarbonCredits,
+        string memory _mainComponent,
+        string memory _SupplySource
+    ) {
         dishName = _dishName;
         dishPrice = _dishPrice;
-        Inventory = _totalSeats;
-        availableInventory = _totalSeats;
+        Inventory = _Inventory;
+        availableInventory = _Inventory;
+        CarbonCredits = _CarbonCredits;
+        mainComponent = _mainComponent;
+        SupplySource = _SupplySource;
     }
 
     // Functions

@@ -156,6 +156,18 @@
                 <label for="total-seats">Initial Inventory:</label>
                 <input type="number" id="total-seats" min="1" placeholder="Enter initial inventory amount" required>
             </div>
+            <div class="form-group">
+                <label for="carbon-credits">Carbon Credits:</label>
+                <input type="number" id="carbon-credits" min="0" placeholder="Enter carbon credits per dish" required>
+            </div>
+            <div class="form-group">
+                <label for="main-component">Main Component:</label>
+                <input type="text" id="main-component" placeholder="Enter main component" required>
+            </div>
+            <div class="form-group">
+                <label for="supply-source">Supply Source:</label>
+                <input type="text" id="supply-source" placeholder="Enter supply source" required>
+            </div>
             <button id="deploy-contract">Deploy New Movie Contract</button>
         </div>
 
@@ -176,6 +188,9 @@
         const movieNameInput = document.getElementById('movie-name');
         const ticketPriceInput = document.getElementById('ticket-price');
         const totalSeatsInput = document.getElementById('total-seats');
+        const carbonCreditsInput = document.getElementById('carbon-credits');
+        const mainComponentInput = document.getElementById('main-component');
+        const supplySourceInput = document.getElementById('supply-source');
         const deployContractBtn = document.getElementById('deploy-contract');
         const statusMessages = document.getElementById('status-messages');
         const movieList = document.getElementById('movie-list');
@@ -263,9 +278,12 @@
         async function deployNewMovieContract() {
             const movieName = movieNameInput.value.trim();
             const ticketPrice = ticketPriceInput.value;
-            const totalSeats = totalSeatsInput.value;
+            const Inventory = totalSeatsInput.value;
+            const carbonCredits = carbonCreditsInput.value;
+            const mainComponent = mainComponentInput.value.trim();
+            const supplySource = supplySourceInput.value.trim();
 
-            if (!movieName || !ticketPrice || !totalSeats) {
+            if (!movieName || !ticketPrice || !Inventory || !carbonCredits || !mainComponent || !supplySource) {
                 showAlert("Please fill in all fields", "error");
                 return;
             }
@@ -275,8 +293,13 @@
                 return;
             }
 
-            if (parseInt(totalSeats) <= 0) {
-                showAlert("Total seats must be greater than 0", "error");
+            if (parseInt(Inventory) <= 0) {
+                showAlert("Inventory must be greater than 0", "error");
+                return;
+            }
+
+            if (parseInt(carbonCredits) < 0) {
+                showAlert("Carbon credits cannot be negative", "error");
                 return;
             }
 
@@ -297,7 +320,10 @@
                 const movieContract = await movieFactory.deploy(
                     movieName,
                     ticketPriceWei,
-                    totalSeats
+                    Inventory,
+                    carbonCredits,
+                    mainComponent,
+                    supplySource
                 );
 
                 // Wait for deployment to complete
@@ -312,7 +338,10 @@
                     address: contractAddress,
                     timestamp: deploymentTime,
                     ticketPrice: ticketPrice,
-                    totalSeats: totalSeats
+                    totalSeats: Inventory,
+                    carbonCredits: carbonCredits,
+                    mainComponent: mainComponent,
+                    supplySource: supplySource
                 });
 
                 // Save to local storage
@@ -327,6 +356,9 @@
                 movieNameInput.value = '';
                 ticketPriceInput.value = '';
                 totalSeatsInput.value = '';
+                carbonCreditsInput.value = '';
+                mainComponentInput.value = '';
+                supplySourceInput.value = '';
 
                 // Save deployment info for the frontend
                 saveDeploymentInfo(contractAddress);
@@ -380,6 +412,9 @@
                     <p>Contract Address: <span class="movie-address">${movie.address}</span></p>
                     <p>Dish Price: ${movie.ticketPrice} ETH</p>
                     <p>Initial Inventory: ${movie.totalSeats}</p>
+                    <p>Carbon Credits: ${movie.carbonCredits || 'Not available'}</p>
+                    <p>Main Component: ${movie.mainComponent || 'Not available'}</p>
+                    <p>Supply Source: ${movie.supplySource || 'Not available'}</p>
                     <p>Deployed: ${movie.timestamp}</p>
                     <button onclick="loadMovie('${movie.address}')">Load This Movie</button>
                 </div>
