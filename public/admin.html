@@ -490,6 +490,62 @@
             pointer-events: none;
             border-radius: 8px;
         }
+
+        /* Carbon Report Styles */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .table tr:hover {
+            background-color: rgba(46, 204, 113, 0.05);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .table-warning {
+            background-color: rgba(243, 156, 18, 0.1);
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        #export-options {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        #carbon-credits-chart {
+            transition: all 0.3s ease;
+        }
+
+        #carbon-credits-chart:hover {
+            box-shadow: var(--hover-shadow);
+        }
     </style>
 
     <!-- Script to reset contract addresses -->
