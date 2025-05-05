@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Movie Ticket Booking</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.4.0/dist/ethers.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .nav-links {
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .nav-links a.active {
+            background-color: #2980b9;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background-color: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+
+        .profile-info {
+            flex-grow: 1;
+        }
+
+        .address {
+            font-family: monospace;
+            font-size: 0.9em;
+            background-color: #eee;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .section {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-title h2 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .ticket-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .address-code {
+            font-family: monospace;
+            font-size: 0.85em;
+            background: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .no-tickets {
+            padding: 30px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .tickets-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>My Movie Profile</h1>
+
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="profile.html" class="active">My Profile</a>
+            <a href="admin.html">Admin Panel</a>
+        </div>
+
+        <div id="connection-status">
+            <p>Wallet Status: <span id="wallet-status">Not connected</span></p>
+            <button id="connect-wallet">Connect Wallet</button>
+        </div>
+
+        <div id="profile-content" style="display: none;">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profile-initial">?</div>
+                <div class="profile-info">
+                    <h2>Your Account</h2>
+                    <p>Address: <span class="address" id="user-address">0x...</span></p>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <h2>Ticket Statistics</h2>
+                </div>
+                <div class="ticket-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-movies">0</div>
+                        <div class="stat-label">Movies</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-tickets">0</div>
+                        <div class="stat-label">Total Tickets</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-spent">0.00</div>
+                        <div class="stat-label">ETH Spent</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <h2>Your Movie Tickets</h2>
+                    <button id="refresh-tickets">Refresh Tickets</button>
+                </div>
+                <div class="tickets-container">
+                    <table id="tickets-table">
+                        <thead>
+                            <tr>
+                                <th>Movie</th>
+                                <th>Tickets</th>
+                                <th>Price Per Ticket</th>
+                                <th>Total Value</th>
+                                <th>Purchase Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tickets-body">
+                            <!-- Tickets will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-messages"></div>
+    </div>
+
+    <script>
+        // ABI will be loaded from artifacts
+        let movieTicketBookingABI;
+
+        // Provider and contract
+        let provider;
+        let signer;
+
+        // Dom elements
+        const connectWalletBtn = document.getElementById('connect-wallet');
+        const walletStatus = document.getElementById('wallet-status');
+        const profileContent = document.getElementById('profile-content');
+        const userAddressElem = document.getElementById('user-address');
+        const profileInitial = document.getElementById('profile-initial');
+        const totalMoviesElem = document.getElementById('total-movies');
+        const totalTicketsElem = document.getElementById('total-tickets');
+        const totalSpentElem = document.getElementById('total-spent');
+        const ticketsBody = document.getElementById('tickets-body');
+        const refreshTicketsBtn = document.getElementById('refresh-tickets');
+        const statusMessages = document.getElementById('status-messages');
+
+        // Initialize
+        window.addEventListener('load', async function () {
+            try {
+                // Load contract ABI from artifacts
+                const response = await fetch('artifacts/contracts/MovieTicketBooking.sol/MovieTicketBooking.json');
+                const contractJson = await response.json();
+                movieTicketBookingABI = contractJson.abi;
+
+                if (window.ethereum) {
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    init();
+                } else {
+                    walletStatus.textContent = "MetaMask not installed";
+                    showAlert("Please install MetaMask to use this application", "error");
+                }
+            } catch (error) {
+                console.error("Error loading contract data:", error);
+                showAlert("Error loading contract information. Please check the console.", "error");
+            }
+        });
+
+        // Initialize app
+        function init() {
+            connectWalletBtn.addEventListener('click', connectWallet);
+            refreshTicketsBtn.addEventListener('click', loadTickets);
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                signer = await provider.getSigner();
+                const userAddress = await signer.getAddress();
+
+                walletStatus.textContent = userAddress.substring(0, 6) + '...' + userAddress.substring(38);
+
+                // Show profile content
+                profileContent.style.display = 'block';
+
+                // Set user address
+                userAddressElem.textContent = userAddress;
+
+                // Set profile initial (first character of address)
+                profileInitial.textContent = userAddress.substring(2, 3).toUpperCase();
+
+                // Listen for account changes
+                window.ethereum.on('accountsChanged', async function (accounts) {
+                    signer = await provider.getSigner();
+                    const newAddress = await signer.getAddress();
+                    walletStatus.textContent = newAddress.substring(0, 6) + '...' + newAddress.substring(38);
+                    userAddressElem.textContent = newAddress;
+                    profileInitial.textContent = newAddress.substring(2, 3).toUpperCase();
+
+                    // Reload tickets
+                    loadTickets();
+                });
+
+                showAlert("Wallet connected successfully!", "success");
+
+                // Load tickets
+                loadTickets();
+            } catch (error) {
+                console.error(error);
+                showAlert("Error connecting to wallet: " + error.message, "error");
+            }
+        }
+
+        // Load tickets from all movies
+        async function loadTickets() {
+            if (!signer) {
+                showAlert("Please connect your wallet first", "error");
+                return;
+            }
+
+            const userAddress = await signer.getAddress();
+            showAlert("Loading your ticket collection...", "success");
+
+            // Get deployed movies from localStorage
+            const storedMovies = localStorage.getItem('deployedMovies');
+            let deployedMovies = [];
+
+            if (storedMovies) {
+                deployedMovies = JSON.parse(storedMovies);
+            } else {
+                // Try to at least check the current movie contract
+                const latestDeployment = localStorage.getItem('latestDeployment');
+                if (latestDeployment) {
+                    const deploymentData = JSON.parse(latestDeployment);
+                    const contractAddress = deploymentData.contractAddress;
+
+                    try {
+                        const movieContract = new ethers.Contract(
+                            contractAddress,
+                            movieTicketBookingABI,
+                            signer
+                        );
+
+                        const movieName = await movieContract.movieName();
+
+                        deployedMovies = [{
+                            name: movieName,
+                            address: contractAddress
+                        }];
+                    } catch (error) {
+                        console.error("Error checking latest deployment:", error);
+                    }
+                }
+            }
+
+            if (deployedMovies.length === 0) {
+                showAlert("No movie contracts found. Please deploy or load a contract first.", "error");
+
+                ticketsBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="no-tickets">No movie tickets found. Visit the Dashboard to browse and purchase tickets.</td>
+                    </tr>
+                `;
+
+                // Reset statistics
+                totalMoviesElem.textContent = "0";
+                totalTicketsElem.textContent = "0";
+                totalSpentElem.textContent = "0.00";
+
+                return;
+            }
+
+            // Clear existing content
+            ticketsBody.innerHTML = '';
+
+            let ticketRecords = [];
+            let totalMoviesWithTickets = 0;
+            let totalTicketsCount = 0;
+            let totalEthSpent = 0;
+
+            // Check each movie contract for tickets
+            for (const movie of deployedMovies) {
+                try {
+                    // Create contract instance for this movie
+                    const movieContract = new ethers.Contract(
+                        movie.address,
+                        movieTicketBookingABI,
+                        signer
+                    );
+
+                    // Get tickets for this movie
+                    const ticketCount = await movieContract.getTotalTicketsBought(userAddress);
+
+                    if (ticketCount > 0) {
+                        totalMoviesWithTickets++;
+                        totalTicketsCount += Number(ticketCount);
+
+                        // Get movie details
+                        const movieName = await movieContract.movieName();
+                        const ticketPrice = await movieContract.ticketPrice();
+                        const ticketPriceEth = ethers.formatEther(ticketPrice);
+                        const totalValue = Number(ticketPriceEth) * Number(ticketCount);
+                        totalEthSpent += totalValue;
+
+                        // Create a record for the table
+                        ticketRecords.push({
+                            name: movieName,
+                            tickets: ticketCount.toString(),
+                            price: ticketPriceEth,
+                            value: totalValue.toFixed(6),
+                            date: 'Unknown' // We don't have purchase date in the contract
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error checking tickets for movie at ${movie.address}:`, error);
+                }
+            }
+
+            // Update statistics
+            totalMoviesElem.textContent = totalMoviesWithTickets;
+            totalTicketsElem.textContent = totalTicketsCount;
+            totalSpentElem.textContent = totalEthSpent.toFixed(4);
+
+            // Show tickets or no tickets message
+            if (ticketRecords.length > 0) {
+                // Sort by movie name
+                ticketRecords.sort((a, b) => a.name.localeCompare(b.name));
+
+                // Add to table
+                ticketRecords.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.name}</td>
+                        <td>${record.tickets}</td>
+                        <td>${record.price} ETH</td>
+                        <td>${record.value} ETH</td>
+                        <td>${record.date}</td>
+                    `;
+                    ticketsBody.appendChild(row);
+                });
+            } else {
+                ticketsBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="no-tickets">You haven't purchased any movie tickets yet. Visit the Dashboard to browse available movies.</td>
+                    </tr>
+                `;
+            }
+
+            showAlert("Ticket collection loaded successfully!", "success");
+        }
+
+        // Show alert message
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.classList.add('alert');
+            alert.classList.add(type === 'error' ? 'alert-error' : 'alert-success');
+            alert.textContent = message;
+
+            statusMessages.innerHTML = '';
+            statusMessages.appendChild(alert);
+
+            // Remove alert after 5 seconds
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+
+</html>
