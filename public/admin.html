@@ -144,12 +144,12 @@
         <div id="deploy-form">
             <h2>Create New Movie Contract</h2>
             <div class="form-group">
-                <label for="movie-name">Movie Name:</label>
-                <input type="text" id="movie-name" placeholder="Enter movie name" required>
+                <label for="movie-name">Dish Name:</label>
+                <input type="text" id="movie-name" placeholder="Enter dish name" required>
             </div>
             <div class="form-group">
-                <label for="ticket-price">Ticket Price (in ETH):</label>
-                <input type="number" id="ticket-price" step="0.001" min="0.001" placeholder="Enter ticket price in ETH"
+                <label for="ticket-price">Dish Price (in ETH):</label>
+                <input type="number" id="ticket-price" step="0.001" min="0.001" placeholder="Enter dish price in ETH"
                     required>
             </div>
             <div class="form-group">
@@ -378,7 +378,7 @@
                 <div class="movie-item">
                     <h3>${movie.name}</h3>
                     <p>Contract Address: <span class="movie-address">${movie.address}</span></p>
-                    <p>Ticket Price: ${movie.ticketPrice} ETH</p>
+                    <p>Dish Price: ${movie.ticketPrice} ETH</p>
                     <p>Total Seats: ${movie.totalSeats}</p>
                     <p>Deployed: ${movie.timestamp}</p>
                     <button onclick="loadMovie('${movie.address}')">Load This Movie</button>

@@ -8,18 +8,18 @@ const hre = require("hardhat");
 const { saveDeployment } = require("./save-deployment");
 
 async function main() {
-    const movieName = "Inception";
-    const ticketPrice = hre.ethers.parseEther("0.01"); // 0.01 ETH per ticket
+    const dishName = "Inception";
+    const dishPrice = hre.ethers.parseEther("0.01"); // 0.01 ETH per ticket
     const totalSeats = 50;
 
     console.log("Deploying MovieTicketBooking contract with parameters:");
-    console.log(`Movie Name: ${movieName}`);
-    console.log(`Ticket Price: ${ticketPrice} wei (${hre.ethers.formatEther(ticketPrice)} ETH)`);
+    console.log(`Dish Name: ${dishName}`);
+    console.log(`Dish Price: ${dishPrice} wei (${hre.ethers.formatEther(dishPrice)} ETH)`);
     console.log(`Total Seats: ${totalSeats}`);
 
     const movieTicketBooking = await hre.ethers.deployContract("MovieTicketBooking", [
-        movieName,
-        ticketPrice,
+        dishName,
+        dishPrice,
         totalSeats
     ]);
 

@@ -399,7 +399,7 @@
                             signer
                         );
 
-                        const movieName = await movieContract.movieName();
+                        const movieName = await movieContract.dishName();
 
                         deployedMovies = [{
                             name: movieName,
@@ -454,17 +454,17 @@
                         totalTicketsCount += Number(ticketCount);
 
                         // Get movie details
-                        const movieName = await movieContract.movieName();
-                        const ticketPrice = await movieContract.ticketPrice();
-                        const ticketPriceEth = ethers.formatEther(ticketPrice);
-                        const totalValue = Number(ticketPriceEth) * Number(ticketCount);
+                        const movieName = await movieContract.dishName();
+                        const dishPrice = await movieContract.dishPrice();
+                        const dishPriceEth = ethers.formatEther(dishPrice);
+                        const totalValue = Number(dishPriceEth) * Number(ticketCount);
                         totalEthSpent += totalValue;
 
                         // Create a record for the table
                         ticketRecords.push({
                             name: movieName,
                             tickets: ticketCount.toString(),
-                            price: ticketPriceEth,
+                            price: dishPriceEth,
                             value: totalValue.toFixed(6),
                             date: 'Unknown' // We don't have purchase date in the contract
                         });

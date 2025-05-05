@@ -257,8 +257,8 @@
 
         <div class="info-container">
             <h2>Movie Information</h2>
-            <p>Movie: <span id="movie-name">Loading...</span></p>
-            <p>Ticket Price: <span id="ticket-price">Loading...</span> ETH</p>
+            <p>Dish: <span id="movie-name">Loading...</span></p>
+            <p>Dish Price: <span id="ticket-price">Loading...</span> ETH</p>
             <p>Available Seats: <span id="available-seats">Loading...</span> / <span id="total-seats">Loading...</span>
             </p>
             <p>Your Tickets: <span id="user-tickets">Loading...</span></p>
@@ -446,12 +446,12 @@
         // Load contract data
         async function loadContractData() {
             try {
-                const movieName = await contract.movieName();
-                movieNameElem.textContent = movieName;
+                const dishName = await contract.dishName();
+                movieNameElem.textContent = dishName;
 
-                const ticketPrice = await contract.ticketPrice();
-                const ticketPriceEth = ethers.formatEther(ticketPrice);
-                ticketPriceElem.textContent = ticketPriceEth;
+                const dishPrice = await contract.dishPrice();
+                const dishPriceEth = ethers.formatEther(dishPrice);
+                ticketPriceElem.textContent = dishPriceEth;
 
                 const totalSeats = await contract.totalSeats();
                 totalSeatsElem.textContent = totalSeats.toString();
@@ -488,8 +488,8 @@
             }
 
             try {
-                const ticketPrice = await contract.ticketPrice();
-                const totalCost = ticketPrice * BigInt(quantity);
+                const dishPrice = await contract.dishPrice();
+                const totalCost = dishPrice * BigInt(quantity);
 
                 showAlert("Confirm transaction in MetaMask...", "success");
 
@@ -610,7 +610,7 @@
             } else {
                 // Try to at least check the current movie contract
                 if (contract) {
-                    const movieName = await contract.movieName();
+                    const movieName = await contract.dishName();
                     const contractAddress = movieTicketBookingAddress;
 
                     deployedMovies = [{
@@ -745,7 +745,7 @@
                             <h3>${movie.name || 'Unknown Movie'}</h3>
                         </div>
                         <div class="movie-content">
-                            <p><strong>Price:</strong> ${movie.ticketPrice || 'Unknown'} ETH</p>
+                            <p><strong>Dish Price:</strong> ${movie.ticketPrice || 'Unknown'} ETH</p>
                             <p><strong>Seats:</strong> ${availableSeats} / ${totalSeats}</p>
                             <div class="movie-stats">
                                 <span>Created: ${deploymentTime}</span>

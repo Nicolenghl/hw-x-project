@@ -3,8 +3,8 @@ pragma solidity ^0.8.0;
 
 contract MovieTicketBooking {
     // State Variables
-    string public movieName;
-    uint public ticketPrice;
+    string public dishName;
+    uint public dishPrice;
     uint public totalSeats;
     uint public availableSeats;
     mapping(address => uint) public ticketsBought;
@@ -13,9 +13,9 @@ contract MovieTicketBooking {
     event TicketPurchased(address buyer, uint numberOfTickets);
 
     // Constructor
-    constructor(string memory _movieName, uint _ticketPrice, uint _totalSeats) {
-        movieName = _movieName;
-        ticketPrice = _ticketPrice;
+    constructor(string memory _dishName, uint _dishPrice, uint _totalSeats) {
+        dishName = _dishName;
+        dishPrice = _dishPrice;
         totalSeats = _totalSeats;
         availableSeats = _totalSeats;
     }
@@ -28,7 +28,7 @@ contract MovieTicketBooking {
             "Not enough seats available"
         );
         require(
-            msg.value >= ticketPrice * _numberOfTickets,
+            msg.value >= dishPrice * _numberOfTickets,
             "Insufficient funds sent"
         );
 
@@ -40,7 +40,7 @@ contract MovieTicketBooking {
         emit TicketPurchased(msg.sender, _numberOfTickets);
 
         // Return excess funds if any
-        uint excess = msg.value - (ticketPrice * _numberOfTickets);
+        uint excess = msg.value - (dishPrice * _numberOfTickets);
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
