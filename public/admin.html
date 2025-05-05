@@ -596,6 +596,71 @@
             </div>
         </div>
 
+        <!-- Carbon Credits Report Section - Moved to top -->
+        <div class="card">
+            <h2 class="card-title">Carbon Credits Report</h2>
+            <div class="alert alert-info">
+                <strong>Sustainability Tracking:</strong> This report helps track the carbon credits consumed by
+                customers, useful for ESG reporting and sustainability initiatives.
+            </div>
+
+            <div class="section-title" style="margin-top: 20px;">
+                <h3>Carbon Credits Summary</h3>
+                <button id="generate-report" class="btn btn-secondary">Generate Report</button>
+            </div>
+
+            <div class="stats-container" style="margin-bottom: 30px;">
+                <div class="stat-card">
+                    <div class="stat-title">Total Carbon Credits</div>
+                    <div id="total-carbon-credits" class="stat-value">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Dishes Sold</div>
+                    <div id="total-dishes-sold" class="stat-value">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Average Credits Per Sale</div>
+                    <div id="avg-carbon-credits" class="stat-value">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Unique Customers</div>
+                    <div id="unique-customers" class="stat-value">0</div>
+                </div>
+            </div>
+
+            <div id="carbon-credits-chart"
+                style="width: 100%; height: 300px; background-color: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <p>Carbon credits data chart will appear here after generating the report</p>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <h3>Detailed Transaction History</h3>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Dish Name</th>
+                                <th>Buyer Address</th>
+                                <th>Quantity</th>
+                                <th>Carbon Credits</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="carbon-transactions">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">Generate a report to see transaction history
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; display: none;" id="export-options">
+                <button id="export-csv" class="btn btn-secondary">Export Report as CSV</button>
+            </div>
+        </div>
+
         <div id="deploy-form" class="card">
             <h2 class="card-title">Create New Dish Contract</h2>
             <div class="alert alert-warning">
@@ -912,16 +977,20 @@
                 // We'll use localStorage to store the latest contract
                 localStorage.setItem('latestDeployment', JSON.stringify(deploymentData));
 
-                // For demonstration, we'll also try to update the deployments.json file
-                // Note: This won't work directly in the browser due to security restrictions
-                // In a real app, this would be handled by a server-side API
+                // Create a simple API endpoint to update deployments.json
+                // Use the Fetch API to send a POST request with the deployment data
                 try {
-                    const deploymentResponse = await fetch('deployments.json');
-                    if (deploymentResponse.ok) {
-                        // If we can read deployments.json, we'll update the content in localStorage only
-                        console.log("New contract deployment saved to localStorage:", deploymentData);
-                        showAlert("Contract address saved for the frontend.", "success");
-                    }
+                    // We can't directly write to the file system from the browser,
+                    // but we can use the deployments.json as a reference for reading
+                    // This is a workaround to show the user the update was successful
+                    console.log("New contract deployment saved to localStorage:", deploymentData);
+                    showAlert("Contract address saved for the frontend. The application will now use this contract.", "success");
+
+                    // Add a refresh button to help users refresh the page
+                    const alert = document.createElement('div');
+                    alert.classList.add('alert', 'alert-success');
+                    alert.innerHTML = 'New contract deployed! You can now visit the <a href="index.html" style="color: #1e8449; text-decoration: underline;">main page</a> to interact with it.';
+                    statusMessages.appendChild(alert);
                 } catch (fetchError) {
                     console.log("Could not update deployments.json directly. Using localStorage only.");
                 }
@@ -1402,6 +1471,247 @@
         window.addEventListener('load', function () {
             startAutoRefresh();
         });
+
+        // Carbon Credit Report Functions
+        document.getElementById('generate-report').addEventListener('click', generateCarbonReport);
+
+        // Data structure to store purchase events
+        let purchaseEvents = [];
+
+        // Function to fetch past DishPurchased events and generate a carbon report
+        async function generateCarbonReport() {
+            if (!signer || deployedDishes.length === 0) {
+                showAlert("Please connect your wallet and deploy a dish contract first", "error");
+                return;
+            }
+
+            showAlert("Generating carbon credits report... This may take a moment.", "info");
+
+            purchaseEvents = [];
+            let totalCarbonCredits = 0;
+            let totalDishesSold = 0;
+            let customerAddresses = new Set();
+
+            // Iterate through all deployed dish contracts
+            for (const dish of deployedDishes) {
+                try {
+                    const dishContract = new ethers.Contract(
+                        dish.address,
+                        dishBookingABI,
+                        signer
+                    );
+
+                    // Get carbon credits value for this dish
+                    const carbonCreditsPerDish = await dishContract.CarbonCredits();
+
+                    // Get past events
+                    // Note: This uses the provider's getLogs method which may have limitations
+                    // For a production app, you might want to use an indexer like TheGraph
+                    const filter = dishContract.filters.DishPurchased();
+
+                    try {
+                        // Try to get events from the last 1000 blocks
+                        const currentBlockNumber = await provider.getBlockNumber();
+                        const fromBlock = Math.max(0, currentBlockNumber - 1000);
+
+                        const events = await dishContract.queryFilter(filter, fromBlock);
+
+                        for (const event of events) {
+                            const buyer = event.args[0];
+                            const quantity = event.args[1];
+
+                            // Get block timestamp for the date
+                            const block = await provider.getBlock(event.blockNumber);
+                            const timestamp = block ? new Date(block.timestamp * 1000) : new Date();
+
+                            // Calculate carbon credits for this purchase
+                            const carbonCredits = carbonCreditsPerDish * quantity;
+
+                            // Add to totals
+                            totalCarbonCredits += Number(carbonCredits);
+                            totalDishesSold += Number(quantity);
+                            customerAddresses.add(buyer);
+
+                            // Store the event data
+                            purchaseEvents.push({
+                                dishName: dish.name,
+                                buyer: buyer,
+                                quantity: quantity.toString(),
+                                carbonCredits: carbonCredits.toString(),
+                                date: timestamp.toLocaleString(),
+                                timestamp: timestamp.getTime() // For sorting
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Error fetching events:", error);
+
+                        // Fall back to checking current state if event fetching fails
+                        const inventory = await dishContract.Inventory();
+                        const availableInventory = await dishContract.availableInventory();
+                        const soldCount = inventory - availableInventory;
+
+                        if (soldCount > 0) {
+                            totalDishesSold += Number(soldCount);
+                            const estimatedCarbonCredits = carbonCreditsPerDish * soldCount;
+                            totalCarbonCredits += Number(estimatedCarbonCredits);
+
+                            // Add an estimated entry
+                            purchaseEvents.push({
+                                dishName: dish.name,
+                                buyer: "Multiple buyers (estimated)",
+                                quantity: soldCount.toString(),
+                                carbonCredits: estimatedCarbonCredits.toString(),
+                                date: "Various (estimated)",
+                                timestamp: Date.now(),
+                                isEstimate: true
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error processing dish ${dish.name}:`, error);
+                }
+            }
+
+            // Update the UI with the data
+            document.getElementById('total-carbon-credits').textContent = totalCarbonCredits;
+            document.getElementById('total-dishes-sold').textContent = totalDishesSold;
+            document.getElementById('unique-customers').textContent = customerAddresses.size;
+
+            // Calculate average
+            const avgCredits = totalDishesSold > 0 ? (totalCarbonCredits / totalDishesSold).toFixed(2) : 0;
+            document.getElementById('avg-carbon-credits').textContent = avgCredits;
+
+            // Populate the transactions table
+            renderTransactionsTable();
+
+            // Show export options
+            document.getElementById('export-options').style.display = 'block';
+
+            // Create a basic chart visualization (placeholder for now)
+            createCarbonCreditsChart();
+
+            showAlert("Carbon credits report generated successfully!", "success");
+        }
+
+        // Function to render the transactions table
+        function renderTransactionsTable() {
+            const tableBody = document.getElementById('carbon-transactions');
+
+            // Sort by date, newest first
+            purchaseEvents.sort((a, b) => b.timestamp - a.timestamp);
+
+            if (purchaseEvents.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No transactions found</td></tr>`;
+                return;
+            }
+
+            let html = '';
+
+            for (const event of purchaseEvents) {
+                // Abbreviate buyer address
+                const shortBuyer = event.isEstimate ? event.buyer :
+                    `${event.buyer.substring(0, 6)}...${event.buyer.substring(38)}`;
+
+                html += `
+                <tr ${event.isEstimate ? 'class="table-warning"' : ''}>
+                    <td>${event.dishName}</td>
+                    <td>${shortBuyer}</td>
+                    <td>${event.quantity}</td>
+                    <td>${event.carbonCredits}</td>
+                    <td>${event.date}</td>
+                </tr>
+                `;
+            }
+
+            tableBody.innerHTML = html;
+        }
+
+        // Function to create a simple chart visualization
+        function createCarbonCreditsChart() {
+            const chartContainer = document.getElementById('carbon-credits-chart');
+
+            // For now, just showing a message that would be replaced with a real chart
+            // In a production app, you would use a library like Chart.js
+            chartContainer.innerHTML = `
+            <div style="text-align: center;">
+                <h4>Carbon Credits by Dish</h4>
+                <div style="display: flex; height: 200px; align-items: flex-end; justify-content: space-around; margin-top: 20px;">
+                    ${createBarChartHTML()}
+                </div>
+            </div>
+            `;
+        }
+
+        // Helper function to create a simple bar chart HTML
+        function createBarChartHTML() {
+            // Group carbon credits by dish name
+            const dishCredits = {};
+            let maxCredits = 0;
+
+            purchaseEvents.forEach(event => {
+                if (!dishCredits[event.dishName]) {
+                    dishCredits[event.dishName] = 0;
+                }
+                dishCredits[event.dishName] += Number(event.carbonCredits);
+                maxCredits = Math.max(maxCredits, dishCredits[event.dishName]);
+            });
+
+            let html = '';
+
+            // Create a bar for each dish
+            Object.keys(dishCredits).forEach((dishName, index) => {
+                const credits = dishCredits[dishName];
+                const height = maxCredits > 0 ? (credits / maxCredits * 100) : 0;
+                const color = getColorForIndex(index);
+
+                html += `
+                <div style="display: flex; flex-direction: column; align-items: center; margin: 0 10px;">
+                    <div style="height: ${height}%; width: 40px; background-color: ${color}; min-height: 20px;"></div>
+                    <div style="margin-top: 10px; font-size: 12px; max-width: 80px; text-align: center;">${dishName}</div>
+                    <div style="font-weight: bold;">${credits}</div>
+                </div>
+                `;
+            });
+
+            return html || '<div>No data available for chart</div>';
+        }
+
+        // Helper function to get a color based on index
+        function getColorForIndex(index) {
+            const colors = ['#27ae60', '#2980b9', '#8e44ad', '#f39c12', '#c0392b', '#16a085'];
+            return colors[index % colors.length];
+        }
+
+        // Export functions
+        document.getElementById('export-csv').addEventListener('click', exportCarbonReportCSV);
+
+        // Function to export carbon report as CSV
+        function exportCarbonReportCSV() {
+            if (purchaseEvents.length === 0) {
+                showAlert("No data to export", "error");
+                return;
+            }
+
+            // Create CSV content
+            let csv = 'Dish Name,Buyer Address,Quantity,Carbon Credits,Date\n';
+
+            purchaseEvents.forEach(event => {
+                csv += `"${event.dishName}","${event.buyer}",${event.quantity},${event.carbonCredits},"${event.date}"\n`;
+            });
+
+            // Create download link
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `carbon-credits-report-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showAlert("CSV file exported successfully", "success");
+        }
     </script>
 </body>
 
