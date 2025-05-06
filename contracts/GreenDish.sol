@@ -12,11 +12,12 @@ contract GreenDish {
     string public SupplySource;
     mapping(address => uint) public DishesBought;
     address public owner;
-    bool public isActive; // New variable to control dish visibility
+    bool public isActive;
 
     // Event declaration
     event DishPurchased(address buyer, uint numberOfDishes);
     event InventoryUpdated(uint newInventory);
+    event DishStatusChanged(bool isActive);
 
     // Constructor
     constructor(
@@ -35,6 +36,7 @@ contract GreenDish {
         mainComponent = _mainComponent;
         SupplySource = _SupplySource;
         owner = msg.sender;
+        isActive = true;
     }
 
     // Modifier to restrict function access to the owner
@@ -46,6 +48,7 @@ contract GreenDish {
     // Functions
     function purchaseDish(uint _numberOfDishes) public payable {
         // Error handling
+        require(isActive, "This dish is not currently available for purchase");
         require(
             _numberOfDishes <= availableInventory,
             "Not enough dishes available"
@@ -67,6 +70,12 @@ contract GreenDish {
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
+
+        // If inventory is now zero, set isActive to false
+        if (availableInventory == 0) {
+            isActive = false;
+            emit DishStatusChanged(false);
+        }
     }
 
     // New function to update inventory
@@ -83,6 +92,21 @@ contract GreenDish {
 
         // Emit event for the update
         emit InventoryUpdated(_newInventory);
+
+        // If inventory was previously 0 but now has items, set isActive to true
+        if (availableInventory > 0 && !isActive) {
+            isActive = true;
+            emit DishStatusChanged(true);
+        }
+    }
+
+    // Function to set dish status (active/inactive)
+    function setDishStatus(bool _isActive) public onlyOwner {
+        // Only update and emit event if the status is actually changing
+        if (isActive != _isActive) {
+            isActive = _isActive;
+            emit DishStatusChanged(_isActive);
+        }
     }
 
     // Check if there's inventory available
